@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 
-def loadTimeSeries(filename):
+def loadData(filename):
 
-    ts = pd.read_csv(filename)
+    dataset = pd.read_csv(filename)
 
-    return ts
+    return dataset
