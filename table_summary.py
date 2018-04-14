@@ -9,13 +9,10 @@ class TableSummary(Summary):
 
         super().__init__(dataset)
 
-        self.recommendResult = {"category_features": self.categroyFeatures, "digital_features": self.digitalFeatures,
-                                "time_feature": [self.timeFeature]}
-
     def getBasicInformation(self):
 
         if self.timeFeature == None:
-            return -1
+            return {"Error": "No time feature"}
 
         rowNum = len(self.dataset)
         colNum = self.dataset.values.shape[1]

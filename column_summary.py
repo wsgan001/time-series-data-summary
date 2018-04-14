@@ -24,18 +24,18 @@ class ColumnsSummary(Summary):
             std = "-"
 
             if feature in self.digitalFeatures:
-                min = int(np.min(self.dataset[feature]))
-                max = int(np.max(self.dataset[feature]))
-                median = int(np.median(self.dataset[feature]))
-                mean = int(np.mean(self.dataset[feature]))
-                std = int(np.std(self.dataset[feature]))
+                min = float(np.min(self.dataset[feature]))
+                max = float(np.max(self.dataset[feature]))
+                median = float(np.median(self.dataset[feature]))
+                mean = float(np.mean(self.dataset[feature]))
+                std = float(np.std(self.dataset[feature]))
 
             count = int(len(self.dataset[feature]))
             uniqueNum = int(self.dataset[feature].nunique())
             nullNum = int(self.dataset[feature].isnull().sum())
 
-            basicInfo[feature] = {"count": count, "min": min, "max": max, "median":median, "mean": mean,
-                                       "std": std, "unique_num": uniqueNum, "null_num":nullNum}
+            basicInfo[feature] = {"count": count, "min": min, "max": max, "median": median, "mean": mean,
+                                  "std": std, "unique_num": uniqueNum, "null_num": nullNum}
 
         return basicInfo
 
@@ -44,14 +44,39 @@ class ColumnsSummary(Summary):
         histDict = {}
 
         for feature in self.columns:
+
             if feature is not self.timeFeature and feature in self.categroyFeatures:
-                self.dataset[feature] = self.dataset[feature].fillna("other")
-                transformer = LabelEncoder()
-                self.dataset[feature] = transformer.fit_transform(self.dataset[feature])
-                hist, binEdges = np.histogram(self.dataset[feature], bins=len(transformer.classes_))
+
+                self.dataset[feature] = self.dataset[feature].fillna("null")
+                group = self.dataset.groupby(by=feature)
+                d = {}
+                for g in group:
+                    d[g[0]] = len(g[1])
+                histDict[feature] = d
+
+            elif feature in self.digitalFeatures:
+                hist, binEdges = np.histogram(self.dataset[feature], bins="auto")
                 histDict[feature] = {"hist": hist.tolist(), "bin_edges": binEdges.tolist()}
+
         return histDict
 
+    def getRank(self):
+
+        dominDict = {}
+
+        for feature in self.columns:
+
+            if feature is not self.timeFeature and feature in self.categroyFeatures:
+
+                self.dataset[feature] = self.dataset[feature].fillna("null")
+                group = self.dataset.groupby(by=feature)
+                d = {}
+                for g in group:
+                    d[g[0]] = len(g[1])
+
+                sort_d = sorted(d.items(), key=lambda x: x.values(), reverse=True)
+
+                pass
 
 
 if __name__ == '__main__':
@@ -62,3 +87,16 @@ if __name__ == '__main__':
     hist = summary.getHist()
     print(basicInfo)
     print(hist)
+
+    import matplotlib.pyplot as plt
+
+    for feature in summary.columns:
+        # if feature in summary.categroyFeatures:
+        #     plt.bar(range(len(hist[feature])), hist[feature].values())
+        #     plt.show()
+        if feature in summary.digitalFeatures:
+            print(hist[feature]['bin_edges'])
+            print(hist[feature]["hist"])
+            plt.bar(hist[feature]['bin_edges'][:-1], hist[feature]["hist"])
+            plt.show()
+

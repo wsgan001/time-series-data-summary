@@ -109,54 +109,62 @@ class TimeSeriesSummary(Summary):
 
         return pacfDict
 
+    def getCorrTimeSeries(self):
+
+        corr = self.dataset[self.digitalFeatures].corr()  # 直接计算不同连续值特征pairwise, 得到相关性矩阵
+        return {"corr": corr.values.tolist()}
+
 
 if __name__ == '__main__':
 
     dataset = loadData('data/deepAD_data_summary_test_data1.csv')
     summary = TimeSeriesSummary(dataset)
 
-    basicInfo = summary.getStatisticInfo()
-    trendDict = summary.getTrend(order=5, curoff=0.5)
-    peakIndex = summary.getPeakIndex(threshold=0.1)
-    acfDict = summary.getAcf()
-    pacfDict = summary.getPacf()
+    corr = summary.getCorrTimeSeries()
+    print(corr)
 
-    for feature in summary.digitalFeatures:
-
-        print("feature:", feature)
-
-        plt.plot(dataset[feature])
-        plt.show()
-
-        # 统计特征,平稳性、随机性
-
-        print(basicInfo[feature])
-
-        # butterworth滤波得到trend
-        plt.plot(trendDict[feature])
-        plt.show()
-
-        # 寻找peak值位置
-        plt.plot(dataset[feature])
-        plt.scatter(peakIndex[feature], dataset[feature][peakIndex[feature]], c="r")
-        plt.show()
-
-        # acf和pacf
-        print(acfDict[feature])
-        plt.bar(range(len(acfDict[feature][0])), np.array(acfDict[feature][0]))
-        plt.show()
-        print(pacfDict[feature])
-        plt.bar(range(len(pacfDict[feature][0])), np.array(pacfDict[feature][0]))
-        plt.show()
-
-        # 自带工具绘制acf和pacf
-        from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(211)
-        fig = plot_acf(dataset[feature], lags=40, ax=ax1)
-        ax2 = fig.add_subplot(212)
-        fig = plot_pacf(dataset[feature], lags=40, ax=ax2)
-        plt.show()
+    # basicInfo = summary.getStatisticInfo()
+    # trendDict = summary.getTrend(order=5, curoff=0.5)
+    # peakIndex = summary.getPeakIndex(threshold=0.1)
+    # acfDict = summary.getAcf()
+    # pacfDict = summary.getPacf()
+    #
+    # for feature in summary.digitalFeatures:
+    #
+    #     print("feature:", feature)
+    #
+    #     plt.plot(dataset[feature])
+    #     plt.show()
+    #
+    #     # 统计特征,平稳性、随机性
+    #
+    #     print(basicInfo[feature])
+    #
+    #     # butterworth滤波得到trend
+    #     plt.plot(trendDict[feature])
+    #     plt.show()
+    #
+    #     # 寻找peak值位置
+    #     plt.plot(dataset[feature])
+    #     plt.scatter(peakIndex[feature], dataset[feature][peakIndex[feature]], c="r")
+    #     plt.show()
+    #
+    #     # acf和pacf
+    #     print(acfDict[feature])
+    #     plt.bar(range(len(acfDict[feature][0])), np.array(acfDict[feature][0]))
+    #     plt.show()
+    #     print(pacfDict[feature])
+    #     plt.bar(range(len(pacfDict[feature][0])), np.array(pacfDict[feature][0]))
+    #     plt.show()
+    #
+    #     # 自带工具绘制acf和pacf
+    #     from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+    #     fig = plt.figure(figsize=(12, 8))
+    #     ax1 = fig.add_subplot(211)
+    #     fig = plot_acf(dataset[feature], lags=40, ax=ax1)
+    #     ax2 = fig.add_subplot(212)
+    #     fig = plot_pacf(dataset[feature], lags=40, ax=ax2)
+    #     plt.show()
 
 
 
