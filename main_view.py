@@ -10,7 +10,7 @@ import json
 parser = argparse.ArgumentParser(description='DeepAD data summary')
 parser.add_argument('--run', '-r', type=str, help='function to execute')
 parser.add_argument('--filepath', '-fp', type=str, help='dataset csv file path')
-parser.add_argument('--communication', '-com', default="file", type=str, help='communication method, cmd or file')
+parser.add_argument('--communication', '-com', default="cmd", type=str, help='communication method, cmd or file')
 parser.add_argument('--filter', default=[], nargs='+', type=str, help='choose features you need')
 #parser.add_argument('--time_series_scope', '-ts_scope', default=[], nargs='+', type=str, help='choose scope you need in time series analysis')
 
@@ -25,7 +25,6 @@ def main():
         if len(filterFeatures) == 0:
             filterFeatures = None
         dataset = loadData(filepath, filterFeatures)
-
     except:
         return {"Error": "load data failed"}
 
