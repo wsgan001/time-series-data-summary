@@ -6,28 +6,38 @@ from table_summary import *
 from column_summary import *
 from time_series_summary import *
 import json
+import config
 
 parser = argparse.ArgumentParser(description='DeepAD data summary')
 parser.add_argument('--run', '-r', type=str, help='function to execute')
 parser.add_argument('--filepath', '-fp', type=str, help='dataset csv file path')
 parser.add_argument('--communication', '-com', default="cmd", type=str, help='communication method, cmd or file')
 parser.add_argument('--filter', default=[], nargs='+', type=str, help='choose features you need')
+parser.add_argument('--ignore', default=[], nargs='+', type=str, help='choose features you ignore')
 #parser.add_argument('--time_series_scope', '-ts_scope', default=[], nargs='+', type=str, help='choose scope you need in time series analysis')
 
 args = parser.parse_args()
 
 def main():
 
+    returnInfo = {} # 返回结果
+
+    # 读取数据
     filepath = args.filepath
-
     try:
-        filterFeatures = args.filter
-        if len(filterFeatures) == 0:
-            filterFeatures = None
-        dataset = loadData(filepath, filterFeatures)
+        dataset = loadData(filepath)
     except:
-        return {"Error": "load data failed"}
+        print({"Error": "load data failed"})
 
+    # 特征过滤
+    filterFeatures = args.filter
+    if len(filterFeatures) != 0:
+        dataset = dataset[filterFeatures]
+    exceptFeatures = args.ignore
+    if len(exceptFeatures) != 0:
+        dataset = dataset.drop(exceptFeatures, axis=1)
+
+    # 执行操作
     if args.run == "table_basic_summary":
 
         summary = TableSummary(dataset)
@@ -47,6 +57,16 @@ def main():
 
         summary = ColumnsSummary(dataset)
         returnInfo = summary.getHist()
+
+    if args.run == "get_rank":
+
+        summary = ColumnsSummary(dataset)
+        returnInfo = summary.getRank()
+
+    if args.run == "get_time_series":
+
+        summary = TimeSeriesSummary(dataset)
+        returnInfo = summary.getTimeSeries()
 
     if args.run == "time_series_basic_summary":
 
@@ -77,6 +97,26 @@ def main():
         summary = TimeSeriesSummary(dataset)
         returnInfo = summary.getCorrTimeSeries()
 
+    if args.run == "all":
+
+        summary = TableSummary(dataset)
+        returnInfo = dict(returnInfo, **summary.getBasicInformation())
+        returnInfo = dict(returnInfo, **summary.getColumnRecommend())
+
+        summary = ColumnsSummary(dataset)
+        returnInfo = dict(returnInfo, **summary.getBasicInformation())
+        returnInfo = dict(returnInfo, **summary.getHist())
+        returnInfo = dict(returnInfo, **summary.getRank())
+
+        summary = TimeSeriesSummary(dataset)
+        returnInfo = dict(returnInfo, **summary.getStatisticInfo())
+        returnInfo = dict(returnInfo, **summary.getTimeSeries())
+        returnInfo = dict(returnInfo, **summary.getTrend(order=5, curoff=0.5))
+        returnInfo = dict(returnInfo, **summary.getPeakIndex(threshold=0.1))
+        returnInfo = dict(returnInfo, **summary.getAcf())
+        returnInfo = dict(returnInfo, **summary.getPacf())
+        returnInfo = dict(returnInfo, **summary.getCorrTimeSeries())
+
     if args.communication == "file":
         with open("data/output.json", "w") as outfile:
             json.dump(returnInfo, outfile)
@@ -88,6 +128,7 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()
 
 

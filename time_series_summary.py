@@ -17,6 +17,15 @@ class TimeSeriesSummary(Summary):
 
         super().__init__(dataset)
 
+    def getTimeSeries(self):
+
+        tsDict = {}
+
+        for feature in self.digitalFeatures:
+            tsDict[feature] = self.dataset[feature].values.tolist()
+
+        return tsDict
+
     def getStatisticInfo(self):
 
         basicInfo = {}

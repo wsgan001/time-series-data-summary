@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 class Summary(object):
 
     def __init__(self, dataset):
@@ -31,7 +30,7 @@ class Summary(object):
                 continue
             elif self.dataset[feature].dtype == object:
                 categroyFeatures.append(feature)
-            elif "id" in feature.lower() or "type" in feature.lower() or "code" in feature.lower(): # 这里只是简单rule是匹配，后续要精细化
+            elif "id" in feature.lower() or "type" in feature.lower() or "code" in feature.lower() or "label" in feature.lower(): # 这里只是简单rule是匹配，后续要精细化
                 categroyFeatures.append(feature)
             else:
                 digitalFeatures.append(feature)
