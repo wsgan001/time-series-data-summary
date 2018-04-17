@@ -11,6 +11,7 @@ import config
 parser = argparse.ArgumentParser(description='DeepAD data summary')
 parser.add_argument('--run', '-r', type=str, help='function to execute')
 parser.add_argument('--filepath', '-fp', type=str, help='dataset csv file path')
+parser.add_argument('--savepath', '-sp', default="/", type=str, help='save clean dataset csv file path')
 parser.add_argument('--communication', '-com', default="cmd", type=str, help='communication method, cmd or file')
 parser.add_argument('--filter', default=[], nargs='+', type=str, help='choose features you need')
 parser.add_argument('--ignore', default=[], nargs='+', type=str, help='choose features you ignore')
@@ -28,6 +29,11 @@ def main():
         dataset = loadData(filepath)
     except:
         print({"Error": "load data failed"})
+
+    if args.run == "clean":  # 清洗数据
+        savePath = args.savepath
+        summary = Summary(dataset)
+        summary.cleanData(savePath)
 
     # 特征过滤
     filterFeatures = args.filter
@@ -97,34 +103,39 @@ def main():
         summary = TimeSeriesSummary(dataset)
         returnInfo = summary.getCorrTimeSeries()
 
+
     if args.run == "all":
 
         summary = TableSummary(dataset)
-        returnInfo = dict(returnInfo, **summary.getBasicInformation())
-        returnInfo = dict(returnInfo, **summary.getColumnRecommend())
+        returnInfo["table_summary"] = summary.getBasicInformation()
+        returnInfo["recommend_columns"] = summary.getColumnRecommend()
 
         summary = ColumnsSummary(dataset)
-        returnInfo = dict(returnInfo, **summary.getBasicInformation())
-        returnInfo = dict(returnInfo, **summary.getHist())
-        returnInfo = dict(returnInfo, **summary.getRank())
+        returnInfo["column_summary"] = summary.getBasicInformation()
+        returnInfo["hist"] = summary.getHist()
+        returnInfo["rank"] = summary.getRank()
 
         summary = TimeSeriesSummary(dataset)
-        returnInfo = dict(returnInfo, **summary.getStatisticInfo())
-        returnInfo = dict(returnInfo, **summary.getTimeSeries())
-        returnInfo = dict(returnInfo, **summary.getTrend(order=5, curoff=0.5))
-        returnInfo = dict(returnInfo, **summary.getPeakIndex(threshold=0.1))
-        returnInfo = dict(returnInfo, **summary.getAcf())
-        returnInfo = dict(returnInfo, **summary.getPacf())
-        returnInfo = dict(returnInfo, **summary.getCorrTimeSeries())
+        returnInfo["time_series_summary"] = summary.getStatisticInfo()
+        returnInfo["time_series"] = summary.getTimeSeries()
+        returnInfo["trend"] = summary.getTrend(order=5, curoff=0.5)
+        returnInfo["peak_index"] = summary.getPeakIndex(threshold=0.1)
+        returnInfo["acf"] = summary.getAcf()
+        returnInfo["pacf"] = summary.getPacf()
+        returnInfo["corr"] = summary.getCorrTimeSeries()
 
-    if args.communication == "file":
-        with open("data/output.json", "w") as outfile:
+    if args.communication == "cmd":
+        returnJsonStr = json.dumps(returnInfo)
+        print(returnJsonStr)
+    else:
+        jsonFilePath = args.communication
+        with open(jsonFilePath, "w") as outfile:
             json.dump(returnInfo, outfile)
         # with open("data/output.json", "r") as outfile:
         #     print(json.load(outfile))
-    elif args.communication == "cmd":
-        returnJsonStr = json.dumps(returnInfo)
-        print(returnJsonStr)
+
+
+
 
 
 if __name__ == '__main__':

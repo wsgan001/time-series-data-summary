@@ -29,6 +29,7 @@ class Summary(object):
             if feature == timeFeature:
                 continue
             elif self.dataset[feature].dtype == object:
+                self.dataset[feature].fillna("null", inplace=True)
                 categroyFeatures.append(feature)
             elif "id" in feature.lower() or "type" in feature.lower() or "code" in feature.lower() or "label" in feature.lower(): # 这里只是简单rule是匹配，后续要精细化
                 categroyFeatures.append(feature)
@@ -39,5 +40,16 @@ class Summary(object):
 
     def getColumnRecommend(self):
 
-        return {"category_features": self.categroyFeatures, "digital_features": self.digitalFeatures,
-                                "time_feature": [self.timeFeature]}
+        recommendDict = {}
+        for feature in self.categroyFeatures:
+            recommendDict[feature] = "category"
+        for feature in self.digitalFeatures:
+            recommendDict[feature] = "digital"
+        recommendDict[self.timeFeature] = "time"
+
+        return recommendDict
+
+    def cleanData(self, savePath):
+
+        self.dataset['errorDetails'] = self.dataset['errorDetails'].apply(lambda x: x.replace('\r\n', ''))
+        self.dataset.to_csv(savePath, index=False)
