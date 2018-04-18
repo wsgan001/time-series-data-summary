@@ -82,6 +82,47 @@ class ColumnsSummary(Summary):
 
         return dominDict
 
+    def getRealationShip(self):
+
+        def intersect(x, y):
+            return x & y
+
+        from functools import reduce
+
+        oneVSN = []
+        oneVSone = []
+
+        for feature1 in self.categroyFeatures:
+            for feature2 in self.categroyFeatures:
+
+                if feature1 == feature2: # 排除自己
+                    continue
+
+                # group操作
+                subData = self.dataset[[feature1, feature2]]
+                group = subData.groupby(by=[feature1])
+
+                clusterList = []
+                oneVSoneFlag = True
+
+                for g in group:
+                    cluster = set(g[1][feature2])
+                    if len(cluster) != 1:
+                        oneVSoneFlag = oneVSoneFlag and False  # 1v1的必然每个cluster里是1，否则肯定不是1v1
+                    clusterList.append(cluster)
+
+                if len(clusterList) != 0 and len(reduce(intersect, clusterList)) == 0:  # cluster之间无交集
+                    if oneVSoneFlag:
+                        oneVSone.append([feature1, feature2])
+                        continue
+                    else:
+                        oneVSN.append((feature1, feature2))
+
+        return {"one_vs_N": oneVSN, "one_vs_one": oneVSone}
+
+
+
+
 if __name__ == '__main__':
 
     import matplotlib.pyplot as plt

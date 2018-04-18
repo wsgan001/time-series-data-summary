@@ -103,6 +103,11 @@ def main():
         summary = TimeSeriesSummary(dataset)
         returnInfo = summary.getCorrTimeSeries()
 
+    if args.run == "get_releationship":
+
+        summary = ColumnsSummary(dataset)
+        returnInfo = summary.getRealationShip()
+
 
     if args.run == "all":
 
@@ -133,10 +138,6 @@ def main():
             json.dump(returnInfo, outfile)
         # with open("data/output.json", "r") as outfile:
         #     print(json.load(outfile))
-
-
-
-
 
 if __name__ == '__main__':
 
